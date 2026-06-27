@@ -2,10 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CreateRoomTypeInput,
   RoomType,
+  RoomTypeWithAvailability,
   UpdateRoomTypeInput,
 } from "@/types/roomType";
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 import { getPaginationRange, toPaginatedResult } from "@/types/pagination";
+import { BookingRepository } from "@/repositories/booking.repository";
+import { calculateAvailableCount } from "@/lib/roomTypeAvailability";
 
 export class RoomTypeRepository {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -48,6 +51,74 @@ export class RoomTypeRepository {
 
     if (error) throw error;
     return data;
+  }
+
+  async findAllWithAvailability(
+    checkIn: string,
+    checkOut: string,
+    options?: { excludeBookingId?: number; excludeGroupId?: number }
+  ): Promise<RoomTypeWithAvailability[]> {
+    const roomTypes = await this.findAll();
+    return this.enrichWithAvailability(roomTypes, checkIn, checkOut, options);
+  }
+
+  async enrichWithAvailability(
+    roomTypes: RoomType[],
+    checkIn: string,
+    checkOut: string,
+    options?: { excludeBookingId?: number; excludeGroupId?: number }
+  ): Promise<RoomTypeWithAvailability[]> {
+    const bookingRepository = new BookingRepository(this.supabase);
+
+    return Promise.all(
+      roomTypes.map(async (roomType) => {
+        const bookedCount = await bookingRepository.countOverlappingByRoomTypeId(
+          roomType.id,
+          checkIn,
+          checkOut,
+          options
+        );
+
+        return {
+          ...roomType,
+          booked_count: bookedCount,
+          available_count: calculateAvailableCount(
+            roomType.total_rooms,
+            bookedCount
+          ),
+        };
+      })
+    );
+  }
+
+  async findPaginatedWithAvailability(
+    params: PaginationParams,
+    checkIn: string,
+    checkOut: string
+  ): Promise<PaginatedResult<RoomTypeWithAvailability>> {
+    const result = await this.findPaginated(params);
+    const data = await this.enrichWithAvailability(
+      result.data,
+      checkIn,
+      checkOut
+    );
+    return { ...result, data };
+  }
+
+  async findByIdWithAvailability(
+    id: number,
+    checkIn: string,
+    checkOut: string
+  ): Promise<RoomTypeWithAvailability | null> {
+    const roomType = await this.findById(id);
+    if (!roomType) return null;
+
+    const [withAvailability] = await this.enrichWithAvailability(
+      [roomType],
+      checkIn,
+      checkOut
+    );
+    return withAvailability;
   }
 
   async create(input: CreateRoomTypeInput): Promise<RoomType> {

@@ -35,12 +35,13 @@ export class DashboardRepository {
   async getTotalRevenue(): Promise<number> {
     const { data, error } = await this.supabase
       .from("bookings")
-      .select("total_amount");
+      .select("total_bill, total_amount");
 
     if (error) throw error;
 
     return (data ?? []).reduce(
-      (sum, row) => sum + Number(row.total_amount ?? 0),
+      (sum, row) =>
+        sum + Number(row.total_bill ?? row.total_amount ?? 0),
       0
     );
   }
@@ -48,7 +49,7 @@ export class DashboardRepository {
   async getRevenueByRoomType(): Promise<RevenueByRoomType[]> {
     const { data, error } = await this.supabase
       .from("bookings")
-      .select("total_amount, room_types(name)")
+      .select("total_bill, total_amount, room_types(name)")
       .not("room_type_id", "is", null);
 
     if (error) throw error;
@@ -56,14 +57,19 @@ export class DashboardRepository {
     const totals = new Map<string, number>();
 
     for (const row of data ?? []) {
-      const roomType = row.room_types as { name: string } | { name: string }[] | null;
-      const name = Array.isArray(roomType)
-        ? roomType[0]?.name
-        : roomType?.name;
+      const roomType = row.room_types as
+        | { name: string }
+        | { name: string }[]
+        | null;
+      const name = Array.isArray(roomType) ? roomType[0]?.name : roomType?.name;
 
       if (!name) continue;
 
-      totals.set(name, (totals.get(name) ?? 0) + Number(row.total_amount ?? 0));
+      totals.set(
+        name,
+        (totals.get(name) ?? 0) +
+          Number(row.total_bill ?? row.total_amount ?? 0)
+      );
     }
 
     return Array.from(totals.entries())

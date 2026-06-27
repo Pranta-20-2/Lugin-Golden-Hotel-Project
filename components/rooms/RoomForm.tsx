@@ -132,7 +132,7 @@ export default function RoomForm({
               htmlFor="status"
               className="mb-1.5 block text-sm font-medium text-slate-600"
             >
-              Status
+              Operational Status
             </label>
             <select
               id="status"
@@ -141,6 +141,9 @@ export default function RoomForm({
               onChange={(e) => setStatus(e.target.value as RoomStatus)}
               className={inputClass}
             >
+              <option value="" disabled>
+                Select operational status
+              </option>
               {ROOM_STATUSES.map((item) => (
                 <option key={item} value={item}>
                   {ROOM_STATUS_LABELS[item]}

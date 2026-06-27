@@ -21,10 +21,10 @@ export default function RoomsByStatusChart({ data }: RoomsByStatusChartProps) {
       <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-slate-900 sm:text-lg">
-            Rooms by Status & Type
+            Rooms by Operational Status & Type
           </h2>
           <p className="text-xs text-slate-500 sm:text-sm">
-            Current room inventory grouped by status and room type
+            Current room inventory grouped by operational status and room type
           </p>
         </div>
         <p className="text-sm font-semibold text-slate-700">

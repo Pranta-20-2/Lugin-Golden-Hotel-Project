@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BuildingIcon } from "@/components/ui/icons";
+import ProcessLoader from "@/components/ui/ProcessLoader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-surface lg:flex-row">
+      <ProcessLoader visible={loading} label="Signing in" />
       <div className="flex flex-1 flex-col justify-center bg-sidebar px-6 py-10 text-white sm:px-10 lg:max-w-md lg:px-12">
         <div className="mx-auto w-full max-w-sm lg:mx-0">
           <div className="mb-8 flex items-center gap-3">

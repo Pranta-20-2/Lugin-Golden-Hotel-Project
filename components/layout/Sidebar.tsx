@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BedIcon,
   BuildingIcon,
   CalendarIcon,
   ChartIcon,
@@ -23,8 +22,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/bookings", label: "Bookings", icon: CalendarIcon, quickAdd: true },
-  { href: "/rooms", label: "Rooms", icon: BedIcon, quickAdd: true },
-  { href: "/room-types", label: "Room Types", icon: BuildingIcon },
+  { href: "/room-types", label: "Room Types", icon: BuildingIcon, quickAdd: true },
   { href: "/customers", label: "Customers", icon: UsersIcon },
   { href: "/booking-groups", label: "Booking Groups", icon: UsersIcon },
   { href: "/invoices", label: "Invoices", icon: InvoiceIcon },

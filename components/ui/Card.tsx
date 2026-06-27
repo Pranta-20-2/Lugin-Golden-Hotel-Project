@@ -2,7 +2,7 @@ type CardProps = {
   children: React.ReactNode;
   className?: string;
   padding?: "sm" | "md" | "lg";
-};
+} & Omit<React.ComponentPropsWithoutRef<"div">, "className">;
 
 const paddingMap = {
   sm: "p-4",
@@ -14,10 +14,12 @@ export default function Card({
   children,
   className = "",
   padding = "md",
+  ...props
 }: CardProps) {
   return (
     <div
       className={`rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 ${paddingMap[padding]} ${className}`}
+      {...props}
     >
       {children}
     </div>

@@ -25,6 +25,9 @@ export default function RoomTypeForm({
   const [ratePerNight, setRatePerNight] = useState(
     roomType?.rate_per_night?.toString() ?? ""
   );
+  const [totalRooms, setTotalRooms] = useState(
+    roomType?.total_rooms != null ? String(roomType.total_rooms) : "1"
+  );
   const [notes, setNotes] = useState(roomType?.notes ?? "");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -40,6 +43,7 @@ export default function RoomTypeForm({
     const payload = {
       name,
       rate_per_night: Number(ratePerNight),
+      total_rooms: Number(totalRooms),
       notes: notes || undefined,
     };
 
@@ -114,6 +118,22 @@ export default function RoomTypeForm({
               onChange={(e) => setRatePerNight(e.target.value)}
               className={inputClass}
               placeholder="1500"
+            />
+          </div>
+          <div>
+            <label htmlFor="totalRooms" className="mb-1.5 block text-sm font-medium text-slate-600">
+              Total Rooms
+            </label>
+            <input
+              id="totalRooms"
+              type="number"
+              min="0"
+              step="1"
+              required
+              value={totalRooms}
+              onChange={(e) => setTotalRooms(e.target.value)}
+              className={inputClass}
+              placeholder="6"
             />
           </div>
         </div>

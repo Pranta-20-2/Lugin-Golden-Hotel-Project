@@ -1,9 +1,11 @@
-export type BookingStatus =
-  | "pending"
-  | "confirmed"
-  | "checked_in"
-  | "checked_out"
-  | "cancelled";
+import type { BookingStatus } from "@/types/booking";
+import {
+  BOOKING_STATUS_COLORS,
+  BOOKING_STATUS_LABELS,
+} from "@/types/booking";
+
+export type { BookingStatus };
+export { BOOKING_STATUS_COLORS, BOOKING_STATUS_LABELS };
 
 export type RevenueByRoomType = {
   name: string;
@@ -35,18 +37,3 @@ export type DashboardStats = {
   roomsByStatus: RoomsByStatus[];
 };
 
-export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  checked_in: "Checked In",
-  checked_out: "Checked Out",
-  cancelled: "Cancelled",
-};
-
-export const BOOKING_STATUS_COLORS: Record<BookingStatus, string> = {
-  pending: "#f59e0b",
-  confirmed: "#3b82f6",
-  checked_in: "#22c55e",
-  checked_out: "#64748b",
-  cancelled: "#ef4444",
-};

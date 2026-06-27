@@ -1,4 +1,5 @@
 import type { RoomType } from "@/types/roomType";
+import type { BookingStatus } from "@/types/booking";
 
 export type RoomStatus = "available" | "occupied" | "maintenance" | "reserved";
 
@@ -13,6 +14,8 @@ export interface Room {
 
 export type RoomWithType = Room & {
   room_types?: Pick<RoomType, "id" | "name" | "rate_per_night"> | null;
+  booking_status?: BookingStatus | null;
+  active_booking_group_id?: number | null;
 };
 
 export type CreateRoomInput = {

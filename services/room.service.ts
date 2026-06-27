@@ -92,6 +92,18 @@ export class RoomService {
     }
   }
 
+  async updateOperationalStatus(id: number, status: RoomStatus): Promise<void> {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new RoomServiceError("Invalid room id", 400);
+    }
+
+    try {
+      await this.repository.updateOperationalStatus(id, status);
+    } catch (error) {
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
   async update(id: number, input: unknown): Promise<RoomWithType> {
     if (!Number.isInteger(id) || id <= 0) {
       throw new RoomServiceError("Invalid room id", 400);

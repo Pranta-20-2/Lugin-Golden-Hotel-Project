@@ -1,21 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import type { RoomType } from "@/types/roomType";
+import { useRouter } from "next/navigation";
+import type { RoomTypeWithAvailability } from "@/types/roomType";
 import DeleteRoomTypeButton from "@/components/room-types/DeleteRoomTypeButton";
 import Card from "@/components/ui/Card";
-import { PlusIcon } from "@/components/ui/icons";
+import AddButton from "@/components/ui/AddButton";
+import ViewButton from "@/components/ui/ViewButton";
 import { formatAmount } from "@/lib/formatCurrency";
 import Pagination from "@/components/ui/Pagination";
 import DebouncedSearchInput from "@/components/ui/DebouncedSearchInput";
 import type { PaginatedResult } from "@/types/pagination";
 
 type RoomTypeListProps = {
-  roomTypes: RoomType[];
-  pagination: PaginatedResult<RoomType>;
+  roomTypes: RoomTypeWithAvailability[];
+  pagination: PaginatedResult<RoomTypeWithAvailability>;
 };
 
 export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProps) {
+  const router = useRouter();
   const paginationQuery = { q: pagination.search };
 
   return (
@@ -23,14 +26,9 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">
           {roomTypes.length} room type{roomTypes.length === 1 ? "" : "s"} configured
+          · Available counts reflect active bookings overlapping today
         </p>
-        <Link
-          href="/room-types/new"
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-dark"
-        >
-          <PlusIcon className="h-4 w-4" />
-          Add Room Type
-        </Link>
+        <AddButton href="/room-types/new">Add Room Type</AddButton>
       </div>
 
       <DebouncedSearchInput
@@ -50,9 +48,15 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                   Rate / Night
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Total Rooms
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Available Today
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Notes
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Actions
                 </th>
               </tr>
@@ -60,24 +64,45 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
             <tbody className="divide-y divide-slate-100">
               {roomTypes.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
                     No room types yet. Tap &quot;Add Room Type&quot; to create one.
                   </td>
                 </tr>
               ) : (
                 roomTypes.map((roomType) => (
-                  <tr key={roomType.id} className="hover:bg-slate-50/50">
+                  <tr
+                    key={roomType.id}
+                    onClick={() => router.push(`/room-types/${roomType.id}`)}
+                    className="cursor-pointer hover:bg-slate-50/50"
+                  >
                     <td className="px-4 py-3.5 text-sm font-semibold text-slate-900">
                       {roomType.name}
                     </td>
                     <td className="px-4 py-3.5 text-sm font-medium text-emerald-600">
                       {formatAmount(Number(roomType.rate_per_night))}
                     </td>
+                    <td className="px-4 py-3.5 text-sm font-medium text-slate-900">
+                      {roomType.total_rooms}
+                    </td>
+                    <td className="px-4 py-3.5 text-sm font-medium">
+                      <span
+                        className={
+                          roomType.available_count === 0
+                            ? "text-red-600"
+                            : roomType.available_count <= 2
+                              ? "text-amber-600"
+                              : "text-emerald-600"
+                        }
+                      >
+                        {roomType.available_count}
+                      </span>
+                    </td>
                     <td className="max-w-xs truncate px-4 py-3.5 text-sm text-slate-500">
                       {roomType.notes || "—"}
                     </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-center gap-2">
+                        <ViewButton href={`/room-types/${roomType.id}`} />
                         <Link
                           href={`/room-types/${roomType.id}/edit`}
                           className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-50 px-3 text-sm font-medium text-primary transition hover:bg-blue-100"
@@ -108,7 +133,12 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
           </Card>
         ) : (
           roomTypes.map((roomType) => (
-            <Card key={roomType.id} padding="sm">
+            <Card
+              key={roomType.id}
+              padding="sm"
+              className="cursor-pointer transition hover:ring-primary/30"
+              onClick={() => router.push(`/room-types/${roomType.id}`)}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <h3 className="truncate font-semibold text-slate-900">
@@ -118,6 +148,18 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                     {formatAmount(Number(roomType.rate_per_night))}
                     <span className="text-xs font-normal text-slate-400"> / night</span>
                   </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Total: {roomType.total_rooms} · Available today:{" "}
+                    <span
+                      className={
+                        roomType.available_count === 0
+                          ? "font-semibold text-red-600"
+                          : "font-semibold text-emerald-600"
+                      }
+                    >
+                      {roomType.available_count}
+                    </span>
+                  </p>
                   {roomType.notes && (
                     <p className="mt-2 line-clamp-2 text-sm text-slate-500">
                       {roomType.notes}
@@ -125,7 +167,14 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                   )}
                 </div>
               </div>
-              <div className="mt-4 flex gap-2 border-t border-slate-100 pt-4">
+              <div
+                className="mt-4 flex gap-2 border-t border-slate-100 pt-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ViewButton
+                  href={`/room-types/${roomType.id}`}
+                  className="h-10 flex-1"
+                />
                 <Link
                   href={`/room-types/${roomType.id}/edit`}
                   className="flex h-10 flex-1 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-primary"

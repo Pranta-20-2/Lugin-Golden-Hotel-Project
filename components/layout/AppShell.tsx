@@ -14,8 +14,11 @@ const pageTitles: Record<string, string> = {
   "/room-types/new": "Add Room Type",
   "/rooms": "Rooms",
   "/rooms/new": "Add Room",
+  "/customers/new": "Add Customer",
   "/customers": "Customers",
+  "/bookings/new": "Add Booking",
   "/bookings": "Bookings",
+  "/booking-groups/new": "Add Group Booking",
   "/booking-groups": "Booking Groups",
   "/invoices": "Invoices",
   "/reports": "Reports",
@@ -34,22 +37,51 @@ const sidebarRoutes = new Set([
 
 function getPageTitle(pathname: string): string {
   if (pageTitles[pathname]) return pageTitles[pathname];
+  if (/^\/room-types\/\d+$/.test(pathname)) return "Room Type Details";
   if (/^\/room-types\/\d+\/edit$/.test(pathname)) return "Edit Room Type";
+  if (/^\/rooms\/\d+$/.test(pathname)) return "Room Details";
   if (/^\/rooms\/\d+\/edit$/.test(pathname)) return "Edit Room";
+  if (/^\/customers\/\d+$/.test(pathname)) return "Customer Details";
+  if (/^\/customers\/\d+\/edit$/.test(pathname)) return "Edit Customer";
+  if (/^\/bookings\/\d+$/.test(pathname)) return "Booking Details";
+  if (/^\/bookings\/\d+\/edit$/.test(pathname)) return "Edit Booking";
+  if (/^\/booking-groups\/\d+$/.test(pathname)) return "Group Booking Details";
+  if (/^\/booking-groups\/\d+\/edit$/.test(pathname)) return "Edit Group Booking";
+  if (/^\/invoices\/\d+$/.test(pathname)) return "Invoice Details";
   return "Dashboard";
 }
 
 function getBackHref(pathname: string): string | null {
   if (sidebarRoutes.has(pathname)) return null;
 
+  const editMatch = pathname.match(
+    /^\/(room-types|rooms|customers|bookings|booking-groups)\/(\d+)\/edit$/
+  );
+  if (editMatch) return `/${editMatch[1]}/${editMatch[2]}`;
+
+  const detailMatch = pathname.match(
+    /^\/(room-types|rooms|customers|bookings|booking-groups|invoices)\/\d+$/
+  );
+  if (detailMatch) return `/${detailMatch[1]}`;
+
   if (pathname.startsWith("/room-types/")) return "/room-types";
   if (pathname.startsWith("/rooms/")) return "/rooms";
+  if (pathname.startsWith("/customers/")) return "/customers";
+  if (pathname.startsWith("/bookings/")) return "/bookings";
+  if (pathname.startsWith("/booking-groups/")) return "/booking-groups";
+  if (pathname.startsWith("/invoices/")) return "/invoices";
 
   const parent = `/${pathname.split("/").filter(Boolean)[0]}`;
   return sidebarRoutes.has(parent) ? parent : null;
 }
 
-function getBackLabel(href: string): string {
+function getBackLabel(href: string, pathname: string): string {
+  const editMatch = pathname.match(
+    /^\/(room-types|rooms|customers|bookings|booking-groups)\/(\d+)\/edit$/
+  );
+  if (editMatch && href === `/${editMatch[1]}/${editMatch[2]}`) {
+    return "Back to Details";
+  }
   return `Back to ${pageTitles[href] ?? "Previous"}`;
 }
 
@@ -79,7 +111,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const title = getPageTitle(pathname);
   const backHref = getBackHref(pathname);
-  const backLabel = backHref ? getBackLabel(backHref) : "";
+  const backLabel = backHref ? getBackLabel(backHref, pathname) : "";
 
   useEffect(() => {
     if (sidebarOpen) {

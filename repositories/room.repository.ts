@@ -7,6 +7,8 @@ import type {
 } from "@/types/room";
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 import { getPaginationRange, toPaginatedResult } from "@/types/pagination";
+import type { BookingStatus } from "@/types/booking";
+import { ACTIVE_BOOKING_STATUSES } from "@/lib/bookingRoomStatusSync";
 
 type RoomListParams = PaginationParams & {
   status?: RoomStatus;
@@ -29,7 +31,8 @@ export class RoomRepository {
       .order("room_number");
 
     if (error) throw error;
-    return data ?? [];
+    const rooms = data ?? [];
+    return this.attachBookingStatuses(rooms);
   }
 
   async findPaginated(
@@ -70,7 +73,47 @@ export class RoomRepository {
     const { data, error, count } = await query.range(from, to);
 
     if (error) throw error;
-    return toPaginatedResult(data ?? [], count ?? 0, params);
+    const rooms = data ?? [];
+    const enriched = await this.attachBookingStatuses(rooms);
+    return toPaginatedResult(enriched, count ?? 0, params);
+  }
+
+  private async attachBookingStatuses(
+    rooms: RoomWithType[]
+  ): Promise<RoomWithType[]> {
+    if (rooms.length === 0) return rooms;
+
+    const roomIds = rooms.map((room) => room.id);
+    const { data, error } = await this.supabase
+      .from("bookings")
+      .select("room_id, status, group_id, updated_at")
+      .in("room_id", roomIds)
+      .in("status", ACTIVE_BOOKING_STATUSES)
+      .order("updated_at", { ascending: false });
+
+    if (error) return rooms;
+
+    const bookingByRoom = new Map<
+      number,
+      { status: BookingStatus; group_id: number | null }
+    >();
+    for (const row of data ?? []) {
+      if (row.room_id != null && !bookingByRoom.has(row.room_id)) {
+        bookingByRoom.set(row.room_id, {
+          status: row.status as BookingStatus,
+          group_id: row.group_id != null ? Number(row.group_id) : null,
+        });
+      }
+    }
+
+    return rooms.map((room) => {
+      const active = bookingByRoom.get(room.id);
+      return {
+        ...room,
+        booking_status: active?.status ?? null,
+        active_booking_group_id: active?.group_id ?? null,
+      };
+    });
   }
 
   private async findRoomTypeIdsByName(search: string): Promise<number[]> {
@@ -98,7 +141,20 @@ export class RoomRepository {
       .maybeSingle();
 
     if (error) throw error;
-    return data;
+    if (!data) return null;
+    const [room] = await this.attachBookingStatuses([data]);
+    return room;
+  }
+
+  async findStatusById(id: number): Promise<RoomStatus | null> {
+    const { data, error } = await this.supabase
+      .from("rooms")
+      .select("status")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return (data?.status as RoomStatus | undefined) ?? null;
   }
 
   async create(input: CreateRoomInput): Promise<RoomWithType> {
@@ -117,6 +173,15 @@ export class RoomRepository {
 
     if (error) throw error;
     return data;
+  }
+
+  async updateOperationalStatus(id: number, status: RoomStatus): Promise<void> {
+    const { error } = await this.supabase
+      .from("rooms")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", id);
+
+    if (error) throw error;
   }
 
   async update(id: number, input: UpdateRoomInput): Promise<RoomWithType> {

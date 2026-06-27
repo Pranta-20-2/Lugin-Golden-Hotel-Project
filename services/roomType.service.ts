@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { RoomTypeRepository } from "@/repositories/roomType.repository";
-import type { RoomType } from "@/types/roomType";
+import type { RoomType, RoomTypeWithAvailability } from "@/types/roomType";
 import { roomTypeSchema } from "@/validators/roomType.schema";
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 
@@ -45,6 +45,63 @@ export class RoomTypeService {
     try {
       return await this.repository.findPaginated(params);
     } catch (error) {
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
+  async getAllWithAvailability(
+    checkIn: string,
+    checkOut: string,
+    options?: { excludeBookingId?: number; excludeGroupId?: number }
+  ): Promise<RoomTypeWithAvailability[]> {
+    try {
+      return await this.repository.findAllWithAvailability(
+        checkIn,
+        checkOut,
+        options
+      );
+    } catch (error) {
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
+  async getPaginatedWithAvailability(
+    params: PaginationParams,
+    checkIn: string,
+    checkOut: string
+  ): Promise<PaginatedResult<RoomTypeWithAvailability>> {
+    try {
+      return await this.repository.findPaginatedWithAvailability(
+        params,
+        checkIn,
+        checkOut
+      );
+    } catch (error) {
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
+  async getByIdWithAvailability(
+    id: number,
+    checkIn: string,
+    checkOut: string
+  ): Promise<RoomTypeWithAvailability> {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new ServiceError("Invalid room type id", 400);
+    }
+
+    try {
+      const roomType = await this.repository.findByIdWithAvailability(
+        id,
+        checkIn,
+        checkOut
+      );
+      if (!roomType) {
+        throw new ServiceError("Room type not found", 404);
+      }
+      return roomType;
+    } catch (error) {
+      if (error instanceof ServiceError) throw error;
       mapSupabaseError(error as { code?: string; message: string });
     }
   }
