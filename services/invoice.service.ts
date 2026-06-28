@@ -9,7 +9,7 @@ import type { InvoiceWithRelations } from "@/types/invoice";
 import { resolveInvoiceStatus } from "@/types/invoice";
 import {
   createInvoiceSchema,
-  recordPaymentSchema,
+  updateInvoiceSchema,
 } from "@/validators/invoice.schema";
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 import { calculateDueAmount } from "@/lib/bookingCalculations";
@@ -79,6 +79,65 @@ export class InvoiceService {
     }
   }
 
+  async update(id: number, input: unknown): Promise<InvoiceWithRelations> {
+    const parsed = updateInvoiceSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new InvoiceServiceError(
+        parsed.error.issues.map((i) => i.message).join(", "),
+        400
+      );
+    }
+
+    try {
+      const invoice = await this.getById(id);
+      const totalBill = Number(invoice.total_bill);
+      const amountPaid = parsed.data.amount_paid;
+
+      if (amountPaid > totalBill) {
+        throw new InvoiceServiceError(
+          "Amount paid cannot exceed total bill",
+          400
+        );
+      }
+
+      const dueAmount = calculateDueAmount(totalBill, amountPaid);
+      const updated = await this.repository.update(id, {
+        total_bill: totalBill,
+        amount_paid: amountPaid,
+        due_amount: dueAmount,
+        status: resolveInvoiceStatus(totalBill, amountPaid),
+        notes:
+          parsed.data.notes !== undefined
+            ? parsed.data.notes
+            : (invoice.notes ?? null),
+      });
+
+      await this.syncSourceBilling(updated, amountPaid, dueAmount);
+      return updated;
+    } catch (error) {
+      if (error instanceof InvoiceServiceError) throw error;
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
+  async delete(id: number): Promise<void> {
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new InvoiceServiceError("Invalid invoice id", 400);
+    }
+
+    try {
+      const invoice = await this.repository.findById(id);
+      if (!invoice) {
+        throw new InvoiceServiceError("Invoice not found", 404);
+      }
+
+      await this.repository.delete(id);
+    } catch (error) {
+      if (error instanceof InvoiceServiceError) throw error;
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
   async create(input: unknown): Promise<InvoiceWithRelations> {
     const parsed = createInvoiceSchema.safeParse(input);
     if (!parsed.success) {
@@ -140,6 +199,12 @@ export class InvoiceService {
     }
 
     const dueAmount = calculateDueAmount(totalBill, amountPaid);
+    if (dueAmount > 0) {
+      throw new InvoiceServiceError(
+        "Invoice can only be generated when due amount is 0",
+        400
+      );
+    }
 
     const invoiceNo = await this.repository.getNextInvoiceNo();
     const invoice = await this.repository.create({
@@ -183,6 +248,12 @@ export class InvoiceService {
     }
 
     const dueAmount = calculateDueAmount(totals.totalBill, amountPaid);
+    if (dueAmount > 0) {
+      throw new InvoiceServiceError(
+        "Invoice can only be generated when due amount is 0",
+        400
+      );
+    }
 
     const invoiceNo = await this.repository.getNextInvoiceNo();
     const invoice = await this.repository.create({
@@ -199,73 +270,6 @@ export class InvoiceService {
 
     await this.syncSourceBilling(invoice, amountPaid, dueAmount);
     return invoice;
-  }
-
-  async recordPayment(
-    invoiceId: number,
-    input: unknown
-  ): Promise<InvoiceWithRelations> {
-    if (!Number.isInteger(invoiceId) || invoiceId <= 0) {
-      throw new InvoiceServiceError("Invalid invoice id", 400);
-    }
-
-    const parsed = recordPaymentSchema.safeParse(input);
-    if (!parsed.success) {
-      throw new InvoiceServiceError(
-        parsed.error.issues.map((i) => i.message).join(", "),
-        400
-      );
-    }
-
-    try {
-      const invoice = await this.repository.findById(invoiceId);
-      if (!invoice) {
-        throw new InvoiceServiceError("Invoice not found", 404);
-      }
-      if (invoice.status === "cancelled") {
-        throw new InvoiceServiceError("Cannot pay a cancelled invoice", 400);
-      }
-      if (invoice.status === "paid") {
-        throw new InvoiceServiceError("Invoice is already fully paid", 400);
-      }
-
-      const paymentAmount = parsed.data.amount;
-      if (paymentAmount > Number(invoice.due_amount)) {
-        throw new InvoiceServiceError(
-          "Payment amount cannot exceed due amount",
-          400
-        );
-      }
-
-      await this.repository.createPayment({
-        invoice_id: invoiceId,
-        amount: paymentAmount,
-        payment_method: parsed.data.payment_method,
-        reference: parsed.data.reference ?? null,
-        notes: parsed.data.notes ?? null,
-      });
-
-      const newAmountPaid = Number(invoice.amount_paid) + paymentAmount;
-      const newDueAmount = calculateDueAmount(
-        Number(invoice.total_bill),
-        newAmountPaid
-      );
-      const newStatus = resolveInvoiceStatus(
-        Number(invoice.total_bill),
-        newAmountPaid
-      );
-
-      await this.syncSourceBilling(invoice, newAmountPaid, newDueAmount);
-
-      return await this.repository.update(invoiceId, {
-        amount_paid: newAmountPaid,
-        due_amount: newDueAmount,
-        status: newStatus,
-      });
-    } catch (error) {
-      if (error instanceof InvoiceServiceError) throw error;
-      mapSupabaseError(error as { code?: string; message: string });
-    }
   }
 
   private async syncSourceBilling(

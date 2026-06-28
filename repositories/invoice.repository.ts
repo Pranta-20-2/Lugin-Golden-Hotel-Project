@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Invoice, InvoiceWithRelations } from "@/types/invoice";
-import type { Payment } from "@/types/invoice";
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 import { getPaginationRange, toPaginatedResult } from "@/types/pagination";
 import { buildInvoiceNo } from "@/lib/bookingCalculations";
@@ -12,29 +11,22 @@ export type InvoiceRecord = {
   customer_id?: number | null;
   total_bill: number;
   subtotal?: number;
+  total?: number;
   amount_paid: number;
   due_amount: number;
   status: Invoice["status"];
   notes?: string | null;
 };
 
-export type PaymentRecord = {
-  invoice_id: number;
-  amount: number;
-  payment_method: Payment["payment_method"];
-  reference?: string | null;
-  notes?: string | null;
-};
-
-function withLegacyAmountColumns(input: InvoiceRecord): InvoiceRecord & {
-  subtotal: number;
-  total: number;
-} {
+function withSyncedLegacyTotals(
+  input: Partial<InvoiceRecord>
+): Partial<InvoiceRecord> {
+  if (input.total_bill == null) return input;
   const bill = Number(input.total_bill);
   return {
     ...input,
     total_bill: bill,
-    subtotal: input.subtotal ?? bill,
+    subtotal: bill,
     total: bill,
   };
 }
@@ -94,8 +86,6 @@ export class InvoiceRepository {
           .filter((id): id is number => id != null)
       ),
     ];
-    const invoiceIds = invoices.map((invoice) => invoice.id);
-
     const bookingsPromise =
       bookingIds.length > 0
         ? this.supabase
@@ -112,24 +102,13 @@ export class InvoiceRepository {
             .in("id", groupIds)
         : Promise.resolve({ data: [], error: null });
 
-    const paymentsPromise =
-      invoiceIds.length > 0
-        ? this.supabase
-            .from("payments")
-            .select("*")
-            .in("invoice_id", invoiceIds)
-            .order("paid_at", { ascending: false })
-        : Promise.resolve({ data: [], error: null });
-
-    const [bookingsResult, groupsResult, paymentsResult] = await Promise.all([
+    const [bookingsResult, groupsResult] = await Promise.all([
       bookingsPromise,
       groupsPromise,
-      paymentsPromise,
     ]);
 
     if (bookingsResult.error) throw bookingsResult.error;
     if (groupsResult.error) throw groupsResult.error;
-    if (paymentsResult.error) throw paymentsResult.error;
 
     type BookingRelation = NonNullable<InvoiceWithRelations["bookings"]>;
     type GroupRelation = NonNullable<InvoiceWithRelations["booking_groups"]>;
@@ -147,13 +126,6 @@ export class InvoiceRepository {
       ])
     );
 
-    const paymentsByInvoice = new Map<number, Payment[]>();
-    for (const payment of paymentsResult.data ?? []) {
-      const list = paymentsByInvoice.get(payment.invoice_id) ?? [];
-      list.push(payment);
-      paymentsByInvoice.set(payment.invoice_id, list);
-    }
-
     return invoices.map((invoice) => ({
       ...invoice,
       bookings: invoice.booking_id
@@ -162,7 +134,6 @@ export class InvoiceRepository {
       booking_groups: invoice.group_id
         ? (groupMap.get(invoice.group_id) ?? null)
         : null,
-      payments: paymentsByInvoice.get(invoice.id) ?? [],
     }));
   }
 
@@ -245,9 +216,17 @@ export class InvoiceRepository {
   }
 
   async create(input: InvoiceRecord): Promise<InvoiceWithRelations> {
+    const bill = Number(input.total_bill);
+    const payload = {
+      ...input,
+      total_bill: bill,
+      subtotal: input.subtotal ?? bill,
+      total: bill,
+    };
+
     const { data, error } = await this.supabase
       .from("invoices")
-      .insert(withLegacyAmountColumns(input))
+      .insert(payload)
       .select("*")
       .single();
 
@@ -259,9 +238,11 @@ export class InvoiceRepository {
     id: number,
     input: Partial<InvoiceRecord>
   ): Promise<InvoiceWithRelations> {
+    const payload = withSyncedLegacyTotals(input);
+
     const { data, error } = await this.supabase
       .from("invoices")
-      .update({ ...input, updated_at: new Date().toISOString() })
+      .update({ ...payload, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select("*")
       .single();
@@ -270,14 +251,9 @@ export class InvoiceRepository {
     return this.enrichInvoice(data);
   }
 
-  async createPayment(input: PaymentRecord): Promise<Payment> {
-    const { data, error } = await this.supabase
-      .from("payments")
-      .insert(input)
-      .select()
-      .single();
+  async delete(id: number): Promise<void> {
+    const { error } = await this.supabase.from("invoices").delete().eq("id", id);
 
     if (error) throw error;
-    return data;
   }
 }

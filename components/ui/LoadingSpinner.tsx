@@ -1,14 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import { CirclesWithBar } from "react-loader-spinner";
 
 const LOADER_BLUE = "#3b82f6";
-
-const CirclesWithBar = dynamic(
-  () =>
-    import("react-loader-spinner").then((module) => module.CirclesWithBar),
-  { ssr: false }
-);
 
 type LoadingSpinnerProps = {
   height?: number | string;

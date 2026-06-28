@@ -12,8 +12,14 @@ type BillingSummaryProps = {
     value: string;
     onChange: (value: string) => void;
   };
+  recentPaymentInput?: {
+    id: string;
+    value: string;
+    onChange: (value: string) => void;
+  };
   roomCount?: number;
   showRatePerNight?: boolean;
+  alwaysShowAmounts?: boolean;
 };
 
 function SummaryRow({
@@ -51,10 +57,13 @@ export default function BillingSummary({
   advancePaid,
   paidLabel = "Advance Payment",
   advanceInput,
+  recentPaymentInput,
   roomCount,
   showRatePerNight = true,
+  alwaysShowAmounts = false,
 }: BillingSummaryProps) {
-  const hasDates = nights > 0;
+  const showNights = nights > 0;
+  const showTotals = alwaysShowAmounts || showNights;
   const advanceValue = advanceInput
     ? Number(advanceInput.value) || 0
     : (advancePaid ?? 0);
@@ -71,7 +80,7 @@ export default function BillingSummary({
         )}
         <SummaryRow
           label="Nights"
-          value={hasDates ? String(nights) : "—"}
+          value={showNights ? String(nights) : "—"}
         />
         {showRatePerNight && (
           <SummaryRow
@@ -81,7 +90,7 @@ export default function BillingSummary({
         )}
         <SummaryRow
           label="Total Bill"
-          value={hasDates ? formatAmount(totalBill) : "—"}
+          value={showTotals ? formatAmount(totalBill) : "—"}
           highlight
           bold
         />
@@ -92,7 +101,7 @@ export default function BillingSummary({
               htmlFor={advanceInput.id}
               className="text-sm font-medium text-slate-600"
             >
-              Advance Payment
+              {paidLabel}
             </label>
             <input
               id={advanceInput.id}
@@ -111,9 +120,29 @@ export default function BillingSummary({
           />
         )}
 
+        {recentPaymentInput && (
+          <div className="flex items-center justify-between gap-4 border-b border-slate-200/80 py-3">
+            <label
+              htmlFor={recentPaymentInput.id}
+              className="text-sm font-medium text-slate-600"
+            >
+              Recent Payment
+            </label>
+            <input
+              id={recentPaymentInput.id}
+              type="number"
+              min="0"
+              step="1"
+              value={recentPaymentInput.value}
+              onChange={(e) => recentPaymentInput.onChange(e.target.value)}
+              className="h-10 w-36 rounded-lg border-0 bg-white px-3 text-right text-sm font-semibold text-slate-900 ring-1 ring-slate-200 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+        )}
+
         <SummaryRow
           label="Due Amount"
-          value={hasDates ? formatAmount(dueAmount) : "—"}
+          value={showTotals ? formatAmount(dueAmount) : "—"}
           highlight
           bold
         />

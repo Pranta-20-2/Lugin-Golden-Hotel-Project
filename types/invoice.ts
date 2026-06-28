@@ -1,18 +1,5 @@
 export type InvoiceStatus = "issued" | "partial" | "paid" | "cancelled";
 
-export type PaymentMethod = "cash" | "card" | "bank_transfer" | "other";
-
-export interface Payment {
-  id: number;
-  invoice_id: number;
-  amount: number;
-  payment_method: PaymentMethod;
-  reference?: string | null;
-  notes?: string | null;
-  paid_at: string;
-  created_at?: string;
-}
-
 export interface Invoice {
   id: number;
   invoice_no: string;
@@ -55,7 +42,6 @@ export type InvoiceWithRelations = Invoice & {
     mobile: string;
     customers?: InvoiceCustomer | null;
   } | null;
-  payments?: Payment[];
 };
 
 export const INVOICE_STATUSES: InvoiceStatus[] = [
@@ -70,20 +56,6 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   partial: "Partially Paid",
   paid: "Paid",
   cancelled: "Cancelled",
-};
-
-export const PAYMENT_METHODS: PaymentMethod[] = [
-  "cash",
-  "card",
-  "bank_transfer",
-  "other",
-];
-
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  cash: "Cash",
-  card: "Card",
-  bank_transfer: "Bank Transfer",
-  other: "Other",
 };
 
 export function resolveInvoiceStatus(

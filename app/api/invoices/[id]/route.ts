@@ -46,3 +46,40 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return handleServiceError(error);
   }
 }
+
+export async function PUT(request: Request, { params }: RouteParams) {
+  const result = await getAuthenticatedService();
+  if ("error" in result) return result.error;
+
+  const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    return NextResponse.json({ error: "Invalid invoice id" }, { status: 400 });
+  }
+
+  try {
+    const body = await request.json();
+    const invoice = await result.service.update(numericId, body);
+    return NextResponse.json(invoice);
+  } catch (error) {
+    return handleServiceError(error);
+  }
+}
+
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const result = await getAuthenticatedService();
+  if ("error" in result) return result.error;
+
+  const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    return NextResponse.json({ error: "Invalid invoice id" }, { status: 400 });
+  }
+
+  try {
+    await result.service.delete(numericId);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return handleServiceError(error);
+  }
+}

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { InvoiceWithRelations } from "@/types/invoice";
-import { PAYMENT_METHOD_LABELS, getInvoiceGuest, getInvoiceMobile } from "@/types/invoice";
+import { getInvoiceGuest, getInvoiceMobile } from "@/types/invoice";
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
-import RecordPaymentForm from "@/components/invoices/RecordPaymentForm";
+import DeleteInvoiceButton from "@/components/invoices/DeleteInvoiceButton";
 import DetailView, { formatDate } from "@/components/ui/DetailView";
 import BillingSummary from "@/components/ui/BillingSummary";
 import Card from "@/components/ui/Card";
-import { formatAmount } from "@/lib/formatCurrency";
+import { calculateNights } from "@/lib/bookingCalculations";
 
 type InvoiceDetailProps = {
   invoice: InvoiceWithRelations;
@@ -16,17 +16,28 @@ export default function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   const isGroup = Boolean(invoice.group_id);
   const booking = invoice.bookings;
   const group = invoice.booking_groups;
-  const payments = [...(invoice.payments ?? [])].sort(
-    (a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime()
-  );
 
-  const nights = booking?.nights ?? 0;
+  const nights =
+    booking?.nights ??
+    (group
+      ? calculateNights(group.check_in, group.check_out)
+      : 0);
+  const totalBill = Number(invoice.total_bill ?? 0);
+  const amountPaid = Number(invoice.amount_paid ?? 0);
+  const dueAmount = Number(invoice.due_amount ?? 0);
 
   return (
     <div className="space-y-5">
       <DetailView
         title={invoice.invoice_no}
         subtitle={getInvoiceGuest(invoice)}
+        editHref={`/invoices/${invoice.id}/edit`}
+        deleteSlot={
+          <DeleteInvoiceButton
+            id={invoice.id}
+            invoiceNo={invoice.invoice_no}
+          />
+        }
         fields={[
           { label: "Guest", value: getInvoiceGuest(invoice) },
           { label: "Mobile", value: getInvoiceMobile(invoice) },
@@ -69,67 +80,20 @@ export default function InvoiceDetail({ invoice }: InvoiceDetailProps) {
         nights={nights}
         ratePerNight={0}
         showRatePerNight={false}
-        totalBill={Number(invoice.total_bill)}
-        advancePaid={Number(invoice.amount_paid)}
+        alwaysShowAmounts
+        totalBill={totalBill}
+        advancePaid={amountPaid}
         paidLabel="Amount Paid"
-        dueAmount={Number(invoice.due_amount)}
+        dueAmount={dueAmount}
       />
 
-      <RecordPaymentForm
-        invoiceId={invoice.id}
-        dueAmount={Number(invoice.due_amount)}
-        disabled={invoice.status === "paid" || invoice.status === "cancelled"}
-      />
-
-      <Card padding="sm">
-        <h3 className="mb-4 text-base font-semibold text-slate-900">
-          Payment History
-        </h3>
-        {payments.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            No additional payments recorded yet.
+      {dueAmount === 0 && (
+        <Card padding="sm" className="border border-emerald-100 bg-emerald-50">
+          <p className="text-sm font-medium text-emerald-700">
+            Invoice is fully paid.
           </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">
-                    Method
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">
-                    Reference
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">
-                    Amount
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td className="px-4 py-3 text-sm text-slate-700">
-                      {formatDate(payment.paid_at)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-700">
-                      {PAYMENT_METHOD_LABELS[payment.payment_method]}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-700">
-                      {payment.reference || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-emerald-600">
-                      {formatAmount(Number(payment.amount))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+        </Card>
+      )}
     </div>
   );
 }

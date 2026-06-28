@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { InvoiceWithRelations } from "@/types/invoice";
 import { getInvoiceGuest } from "@/types/invoice";
 import InvoiceStatusBadge from "@/components/invoices/InvoiceStatusBadge";
+import DeleteInvoiceButton from "@/components/invoices/DeleteInvoiceButton";
 import Card from "@/components/ui/Card";
 import ViewButton from "@/components/ui/ViewButton";
 import Pagination from "@/components/ui/Pagination";
@@ -122,7 +124,19 @@ export default function InvoiceList({
                       <InvoiceStatusBadge status={invoice.status} />
                     </td>
                     <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
-                      <ViewButton href={`/invoices/${invoice.id}`} />
+                      <div className="flex items-center justify-center gap-2">
+                        <ViewButton href={`/invoices/${invoice.id}`} />
+                        <Link
+                          href={`/invoices/${invoice.id}/edit`}
+                          className="inline-flex h-9 items-center justify-center rounded-lg bg-blue-50 px-3 text-sm font-medium text-primary transition hover:bg-blue-100"
+                        >
+                          Edit
+                        </Link>
+                        <DeleteInvoiceButton
+                          id={invoice.id}
+                          invoiceNo={invoice.invoice_no}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -155,6 +169,24 @@ export default function InvoiceList({
                 {formatAmount(Number(invoice.due_amount))}
               </span>
             </p>
+            <div
+              className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ViewButton href={`/invoices/${invoice.id}`} className="h-10 flex-1" />
+              <Link
+                href={`/invoices/${invoice.id}/edit`}
+                className="flex h-10 flex-1 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-primary"
+              >
+                Edit
+              </Link>
+              <div className="w-full">
+                <DeleteInvoiceButton
+                  id={invoice.id}
+                  invoiceNo={invoice.invoice_no}
+                />
+              </div>
+            </div>
           </Card>
         ))}
       </div>

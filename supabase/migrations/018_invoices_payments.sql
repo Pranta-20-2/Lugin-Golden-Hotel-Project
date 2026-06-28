@@ -1,4 +1,4 @@
--- Phase 6: Invoices & Payments (idempotent — safe if a partial invoices table already exists)
+-- Phase 6: Invoices (idempotent — safe if a partial invoices table already exists)
 
 create table if not exists public.invoices (
   id bigint generated always as identity primary key
@@ -92,60 +92,7 @@ create index if not exists invoices_group_id_idx on public.invoices (group_id);
 create index if not exists invoices_customer_id_idx on public.invoices (customer_id);
 create index if not exists invoices_status_idx on public.invoices (status);
 
-create table if not exists public.payments (
-  id bigint generated always as identity primary key
-);
-
-alter table public.payments
-  add column if not exists invoice_id bigint,
-  add column if not exists amount numeric,
-  add column if not exists payment_method text default 'cash',
-  add column if not exists reference text,
-  add column if not exists notes text,
-  add column if not exists paid_at timestamptz default now(),
-  add column if not exists created_at timestamptz default now();
-
-update public.payments set payment_method = 'cash' where payment_method is null;
-update public.payments set paid_at = now() where paid_at is null;
-update public.payments set created_at = now() where created_at is null;
-
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint
-    where conrelid = 'public.payments'::regclass
-      and conname = 'payments_invoice_id_fkey'
-  ) then
-    alter table public.payments
-      add constraint payments_invoice_id_fkey
-      foreign key (invoice_id) references public.invoices(id) on delete cascade;
-  end if;
-
-  if not exists (
-    select 1 from pg_constraint
-    where conrelid = 'public.payments'::regclass
-      and conname = 'payments_amount_check'
-  ) then
-    alter table public.payments
-      add constraint payments_amount_check
-      check (amount > 0);
-  end if;
-
-  if not exists (
-    select 1 from pg_constraint
-    where conrelid = 'public.payments'::regclass
-      and conname = 'payments_payment_method_check'
-  ) then
-    alter table public.payments
-      add constraint payments_payment_method_check
-      check (payment_method in ('cash', 'card', 'bank_transfer', 'other'));
-  end if;
-end $$;
-
-create index if not exists payments_invoice_id_idx on public.payments (invoice_id);
-
 alter table public.invoices enable row level security;
-alter table public.payments enable row level security;
 
 drop policy if exists "Authenticated users can select invoices" on public.invoices;
 drop policy if exists "Authenticated users can insert invoices" on public.invoices;
@@ -160,17 +107,3 @@ create policy "Authenticated users can update invoices"
   on public.invoices for update to authenticated using (true) with check (true);
 create policy "Authenticated users can delete invoices"
   on public.invoices for delete to authenticated using (true);
-
-drop policy if exists "Authenticated users can select payments" on public.payments;
-drop policy if exists "Authenticated users can insert payments" on public.payments;
-drop policy if exists "Authenticated users can update payments" on public.payments;
-drop policy if exists "Authenticated users can delete payments" on public.payments;
-
-create policy "Authenticated users can select payments"
-  on public.payments for select to authenticated using (true);
-create policy "Authenticated users can insert payments"
-  on public.payments for insert to authenticated with check (true);
-create policy "Authenticated users can update payments"
-  on public.payments for update to authenticated using (true) with check (true);
-create policy "Authenticated users can delete payments"
-  on public.payments for delete to authenticated using (true);

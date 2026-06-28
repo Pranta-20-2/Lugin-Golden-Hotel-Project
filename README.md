@@ -24,7 +24,7 @@ A hotel booking and management application built with **Next.js**, **TypeScript*
 - **Customers** — Full CRUD, pagination, debounced search
 - **Bookings** — Full CRUD by room type inventory (no room numbers), advance/due, inline customer onboarding
 - **Booking Groups** — Multi-room group bookings by room type quantity, rolled-up totals
-- **Invoices & Payments** — Generate invoices from bookings/groups, record payments, sync due amounts
+- **Invoices** — Generate invoices from bookings/groups, store cash paid and due amounts
 
 ### Planned
 
@@ -96,10 +96,11 @@ Run the SQL migrations in order in the **Supabase SQL Editor** (`supabase/migrat
 10. `015_bookings_room_type_id.sql` *(book by room type)*
 11. `016_booking_groups_customer_id.sql` *(link groups to customers)*
 12. `017_bookings_room_type_inventory.sql` *(drop room_id — no room numbers on bookings)*
-13. `018_invoices_payments.sql` *(invoices & payments)*
+13. `018_invoices_payments.sql` *(invoices)*
 14. `019_invoices_customer_id_fk.sql` *(ensure booking/group/customer FKs on invoices)*
 15. `020_invoices_subtotal.sql` *(align legacy subtotal column with total_bill)*
 16. `021_invoices_total.sql` *(align legacy total column with total_bill)*
+17. `022_drop_payments.sql` *(remove separate payments table)*
 
 **Seeds** (after migrations): see `supabase/seed/README.md`
 
@@ -150,7 +151,6 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/api/booking-groups/[id]` | Group booking read, update, delete |
 | `/api/invoices` | Invoice list & create (supports `?bookingId=` / `?groupId=` on UI) |
 | `/api/invoices/[id]` | Invoice read |
-| `/api/invoices/[id]/payments` | Record payment on invoice |
 
 All API routes require an authenticated session.
 

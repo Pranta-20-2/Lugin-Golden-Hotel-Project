@@ -336,6 +336,9 @@ export default function BookingGroupForm({
                         {roomType.name}
                       </p>
                       <p className="mt-1 text-xs text-slate-500">
+                        {roomType.notes ?? "No notes"}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
                         {formatAmount(rate)}/night · Total: {roomType.total_rooms} ·
                         Available: {roomType.available_count}
                       </p>

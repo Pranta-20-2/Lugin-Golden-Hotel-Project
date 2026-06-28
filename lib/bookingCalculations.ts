@@ -1,3 +1,5 @@
+import { roundMoney } from "@/lib/formatCurrency";
+
 export function calculateNights(checkIn: string, checkOut: string): number {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
@@ -10,7 +12,7 @@ export function calculateTotalBill(nights: number, ratePerNight: number): number
 }
 
 export function calculateDueAmount(totalBill: number, advancePaid: number): number {
-  return Math.max(0, Number(totalBill) - Number(advancePaid));
+  return Math.max(0, roundMoney(Number(totalBill) - Number(advancePaid)));
 }
 
 export function buildBookingNo(sequence: number, date = new Date()): string {
@@ -22,3 +24,5 @@ export function buildInvoiceNo(sequence: number, date = new Date()): string {
   const ymd = date.toISOString().slice(0, 10).replace(/-/g, "");
   return `INV-${ymd}-${String(sequence).padStart(4, "0")}`;
 }
+
+export { roundMoney };

@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { INVOICE_STATUSES, PAYMENT_METHODS } from "@/types/invoice";
+import { INVOICE_STATUSES } from "@/types/invoice";
 
 export const invoiceStatusSchema = z.enum(INVOICE_STATUSES);
-export const paymentMethodSchema = z.enum(PAYMENT_METHODS);
 
 export const createInvoiceSchema = z
   .object({
@@ -24,18 +23,18 @@ export const createInvoiceSchema = z
     { message: "Provide either booking_id or group_id" }
   );
 
-export const recordPaymentSchema = z.object({
-  amount: z.coerce.number().positive("Payment amount must be greater than zero"),
-  payment_method: paymentMethodSchema.default("cash"),
-  reference: z
-    .union([z.literal(""), z.string().trim()])
-    .optional()
-    .transform((value) => (value ? value : undefined)),
+export type CreateInvoiceSchema = z.infer<typeof createInvoiceSchema>;
+
+export const updateInvoiceSchema = z.object({
+  amount_paid: z.coerce
+    .number()
+    .min(0, "Amount paid cannot be negative"),
   notes: z
-    .union([z.literal(""), z.string().trim()])
+    .union([z.literal(""), z.null(), z.string()])
     .optional()
-    .transform((value) => (value ? value : undefined)),
+    .transform((value) =>
+      value === undefined ? undefined : value?.trim() ? value.trim() : null
+    ),
 });
 
-export type CreateInvoiceSchema = z.infer<typeof createInvoiceSchema>;
-export type RecordPaymentSchema = z.infer<typeof recordPaymentSchema>;
+export type UpdateInvoiceSchema = z.infer<typeof updateInvoiceSchema>;
