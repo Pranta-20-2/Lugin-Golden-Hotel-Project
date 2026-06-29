@@ -22,16 +22,13 @@ export default async function DashboardPage() {
           label="Total Bookings"
           value={stats.totalBookings.toLocaleString()}
         />
-        <StatCard
-          label="Room Types"
-          value={stats.roomTypeCount.toString()}
-        />
+        <StatCard label="Room Types" value={stats.roomTypeCount.toString()} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
+        <RoomTypeAvailabilityChart />
         <RevenueByRoomTypeChart data={stats.revenueByRoomType} />
         <BookingsByStatusChart data={stats.bookingsByStatus} />
-        <RoomTypeAvailabilityChart />
       </div>
     </div>
   );

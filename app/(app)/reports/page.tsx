@@ -44,11 +44,11 @@ export default async function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
-        <MonthlyRevenueChart data={stats.monthlyRevenue} />
-        <InvoicesByStatusChart data={stats.invoicesByStatus} />
+        <RoomTypeAvailabilityChart />
         <RevenueByRoomTypeChart data={stats.revenueByRoomType} />
         <BookingsByStatusChart data={stats.bookingsByStatus} />
-        <RoomTypeAvailabilityChart />
+        <MonthlyRevenueChart data={stats.monthlyRevenue} />
+        <InvoicesByStatusChart data={stats.invoicesByStatus} />
       </div>
     </div>
   );
