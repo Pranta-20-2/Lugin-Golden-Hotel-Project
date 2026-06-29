@@ -1,12 +1,25 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabaseEnv, SUPABASE_ENV_ERROR } from "@/lib/supabase/env";
 
 export async function proxy(request: NextRequest) {
+  const supabaseEnv = getSupabaseEnv();
+  if (!supabaseEnv) {
+    if (request.nextUrl.pathname.startsWith("/api")) {
+      return NextResponse.json({ error: SUPABASE_ENV_ERROR }, { status: 503 });
+    }
+
+    return new NextResponse(SUPABASE_ENV_ERROR, {
+      status: 503,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    supabaseEnv.url,
+    supabaseEnv.publishableKey,
     {
       cookies: {
         getAll() {
