@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BuildingIcon } from "@/components/ui/icons";
+import { BuildingIcon, EyeIcon, EyeOffIcon } from "@/components/ui/icons";
 import ProcessLoader from "@/components/ui/ProcessLoader";
 
 export default function LoginPage() {
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -84,15 +85,29 @@ export default function LoginPage() {
               <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-600">
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={inputClass}
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className={`${inputClass} pr-12`}
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
             {error && (
               <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600" role="alert">
