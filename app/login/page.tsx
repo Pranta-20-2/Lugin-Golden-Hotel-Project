@@ -47,7 +47,7 @@ export default function LoginPage() {
               <BuildingIcon className="h-6 w-6 text-white" />
             </div>
             <span className="text-2xl font-bold leading-tight tracking-wide">
-              Lugin Golden
+              Al Asdiqa Al Masia Hotel
             </span>
           </div>
           <h1 className="text-3xl font-bold leading-tight">

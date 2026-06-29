@@ -3,7 +3,7 @@ import { DashboardService } from "@/services/dashboard.service";
 import StatCard from "@/components/ui/StatCard";
 import RevenueByRoomTypeChart from "@/components/dashboard/RevenueByRoomTypeChart";
 import BookingsByStatusChart from "@/components/dashboard/BookingsByStatusChart";
-import RoomsByStatusChart from "@/components/dashboard/RoomsByStatusChart";
+import RoomTypeAvailabilityChart from "@/components/dashboard/RoomTypeAvailabilityChart";
 import { formatAmount } from "@/lib/formatCurrency";
 
 export default async function DashboardPage() {
@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     <div className="space-y-5 sm:space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
-          label="Total Revenue"
+          label="Total Collected"
           value={formatAmount(stats.totalRevenue)}
         />
         <StatCard
@@ -31,7 +31,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-5">
         <RevenueByRoomTypeChart data={stats.revenueByRoomType} />
         <BookingsByStatusChart data={stats.bookingsByStatus} />
-        <RoomsByStatusChart data={stats.roomsByStatus} />
+        <RoomTypeAvailabilityChart />
       </div>
     </div>
   );

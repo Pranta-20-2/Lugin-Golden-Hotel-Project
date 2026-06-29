@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Lugin Golden — Hotel Booking System",
-  description: "Lugin Golden Hotel Management Application",
+  title: "Al Asdiqa Al Masia Hotel — Hotel Booking System",
+  description: "Al Asdiqa Al Masia Hotel Hotel Management Application",
 };
 
 export default function RootLayout({

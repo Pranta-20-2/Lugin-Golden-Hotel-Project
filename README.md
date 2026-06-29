@@ -1,4 +1,4 @@
-# Lugin Golden — Hotel Booking System
+# Al Asdiqa Al Masia Hotel — Hotel Booking System
 
 A hotel booking and management application built with **Next.js**, **TypeScript**, **Tailwind CSS**, and **Supabase** (PostgreSQL).
 

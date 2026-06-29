@@ -43,7 +43,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
           <BuildingIcon className="h-5 w-5 text-white" />
         </div>
         <span className="text-lg font-bold leading-tight tracking-wide">
-          Lugin Golden
+          Al Asdiqa Al Masia Hotel
         </span>
       </div>
 

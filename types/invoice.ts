@@ -58,6 +58,13 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   cancelled: "Cancelled",
 };
 
+export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
+  issued: "#3b82f6",
+  partial: "#f59e0b",
+  paid: "#22c55e",
+  cancelled: "#ef4444",
+};
+
 export function resolveInvoiceStatus(
   totalBill: number,
   amountPaid: number

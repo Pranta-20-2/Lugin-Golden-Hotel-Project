@@ -12,16 +12,6 @@ export type RevenueByRoomType = {
   revenue: number;
 };
 
-export type RoomsByStatus = {
-  status: "available" | "occupied" | "maintenance" | "reserved";
-  label: string;
-  count: number;
-  roomTypes: {
-    name: string;
-    count: number;
-  }[];
-};
-
 export type BookingsByStatus = {
   status: BookingStatus;
   label: string;
@@ -34,6 +24,5 @@ export type DashboardStats = {
   roomTypeCount: number;
   revenueByRoomType: RevenueByRoomType[];
   bookingsByStatus: BookingsByStatus[];
-  roomsByStatus: RoomsByStatus[];
 };
 
