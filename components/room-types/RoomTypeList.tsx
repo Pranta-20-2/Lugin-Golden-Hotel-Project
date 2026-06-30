@@ -23,7 +23,7 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3 sm:gap-4">
         <p className="text-sm text-slate-500">
           {roomTypes.length} room type{roomTypes.length === 1 ? "" : "s"} configured
           · Available counts reflect active bookings overlapping today

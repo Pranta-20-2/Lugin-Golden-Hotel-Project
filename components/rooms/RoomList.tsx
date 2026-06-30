@@ -13,6 +13,7 @@ import RoomStatusBadge from "@/components/rooms/RoomStatusBadge";
 import BookingStatusBadge from "@/components/rooms/BookingStatusBadge";
 import Pagination from "@/components/ui/Pagination";
 import DebouncedSearchInput from "@/components/ui/DebouncedSearchInput";
+import FilterTabs from "@/components/ui/FilterTabs";
 import type { PaginatedResult } from "@/types/pagination";
 
 type RoomListProps = {
@@ -50,7 +51,7 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between gap-3 sm:gap-4">
         <p className="text-sm text-slate-500">
           {rooms.length} room{rooms.length === 1 ? "" : "s"} configured
         </p>
@@ -62,36 +63,21 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
         className="max-w-md"
       />
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Operational status
-        </p>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          <Link
-            href={getStatusHref(undefined, pagination.search)}
-            className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 transition ${
-              !status
-                ? "bg-primary text-white ring-primary"
-                : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            All
-          </Link>
-          {ROOM_STATUSES.map((item) => (
-            <Link
-              key={item}
-              href={getStatusHref(item, pagination.search)}
-              className={`shrink-0 rounded-xl px-4 py-2 text-sm font-semibold ring-1 transition ${
-                status === item
-                  ? "bg-primary text-white ring-primary"
-                  : "bg-white text-slate-600 ring-slate-200 hover:bg-slate-50"
-              }`}
-            >
-              {ROOM_STATUS_LABELS[item]}
-            </Link>
-          ))}
-        </div>
-      </div>
+      <FilterTabs
+        label="Operational status"
+        tabs={[
+          {
+            href: getStatusHref(undefined, pagination.search),
+            label: "All",
+            active: !status,
+          },
+          ...ROOM_STATUSES.map((item) => ({
+            href: getStatusHref(item, pagination.search),
+            label: ROOM_STATUS_LABELS[item],
+            active: status === item,
+          })),
+        ]}
+      />
 
       <Card padding="sm" className="hidden overflow-hidden md:block">
         <div className="overflow-x-auto">

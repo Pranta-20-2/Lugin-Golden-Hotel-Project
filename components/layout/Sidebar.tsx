@@ -37,8 +37,8 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full flex-col bg-sidebar text-white">
-      <div className="flex items-center gap-3 px-5 py-6">
+    <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-white">
+      <div className="relative z-10 flex items-center gap-3 px-5 py-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand shadow-lg shadow-brand/30">
           <BuildingIcon className="h-5 w-5 text-white" />
         </div>
@@ -47,7 +47,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         </span>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4">
+      <nav className="relative z-10 flex-1 space-y-1 overflow-y-auto px-3 pb-4">
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -78,8 +78,16 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <div className="pointer-events-none mt-auto px-4 pb-6 opacity-20">
-        <svg viewBox="0 0 200 80" className="w-full text-white" fill="currentColor">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-0 translate-y-2 px-3 pb-4 opacity-20"
+      >
+        <svg
+          viewBox="0 0 200 80"
+          className="w-full text-white"
+          fill="currentColor"
+          preserveAspectRatio="xMidYMax meet"
+        >
           <rect x="10" y="30" width="20" height="50" rx="2" />
           <rect x="35" y="20" width="18" height="60" rx="2" />
           <rect x="58" y="35" width="22" height="45" rx="2" />
