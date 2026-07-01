@@ -34,12 +34,12 @@ export default function DetailView({
             <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
           )}
         </div>
-        <div className="no-print flex flex-wrap gap-2">
+        <div className="no-print grid w-full grid-cols-2 gap-2 sm:ml-auto lg:flex lg:w-auto lg:flex-nowrap lg:items-center lg:justify-end lg:gap-2 [&_a]:flex [&_a]:h-10 [&_a]:w-full [&_a]:items-center [&_a]:justify-center [&_button]:h-10 [&_button]:w-full [&>div]:min-w-0 [&>div]:w-full lg:[&_a]:w-auto lg:[&_button]:w-auto lg:[&>div]:w-auto">
           {extraActions}
           {editHref ? (
             <Link
               href={editHref}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-50 px-4 text-sm font-semibold text-primary transition hover:bg-blue-100"
+              className="rounded-xl bg-blue-50 px-4 text-sm font-semibold text-primary transition hover:bg-blue-100"
             >
               Edit
             </Link>
