@@ -17,23 +17,29 @@ type RoomTypeListProps = {
   pagination: PaginatedResult<RoomTypeWithAvailability>;
 };
 
-export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProps) {
+export default function RoomTypeList({
+  roomTypes,
+  pagination,
+}: RoomTypeListProps) {
   const router = useRouter();
   const paginationQuery = { q: pagination.search };
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
-        <p className="text-sm text-slate-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center gap-3 sm:gap-4">
+        <div className="order-1 md:order-2 justify-self-end">
+          <AddButton href="/room-types/new">Add Room Type</AddButton>
+        </div>
+
+        <p className="order-2 md:order-1 text-sm text-slate-500">
           {roomTypes.length} room type{roomTypes.length === 1 ? "" : "s"} configured
           · Available counts reflect active bookings overlapping today
         </p>
-        <AddButton href="/room-types/new">Add Room Type</AddButton>
       </div>
 
       <DebouncedSearchInput
         placeholder="Search room type name..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <Card padding="sm" className="hidden overflow-hidden md:block">
@@ -64,8 +70,12 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
             <tbody className="divide-y divide-slate-100">
               {roomTypes.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
-                    No room types yet. Tap &quot;Add Room Type&quot; to create one.
+                  <td
+                    colSpan={6}
+                    className="px-4 py-10 text-center text-sm text-slate-500"
+                  >
+                    No room types yet. Tap &quot;Add Room Type&quot; to create
+                    one.
                   </td>
                 </tr>
               ) : (
@@ -100,7 +110,10 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                     <td className="max-w-xs truncate px-4 py-3.5 text-sm text-slate-500">
                       {roomType.notes || "—"}
                     </td>
-                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-4 py-3.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-center gap-2">
                         <ViewButton href={`/room-types/${roomType.id}`} />
                         <Link
@@ -121,7 +134,11 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
             </tbody>
           </table>
         </div>
-        <Pagination {...pagination} basePath="/room-types" query={paginationQuery} />
+        <Pagination
+          {...pagination}
+          basePath="/room-types"
+          query={paginationQuery}
+        />
       </Card>
 
       <div className="space-y-3 md:hidden">
@@ -146,7 +163,10 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                   </h3>
                   <p className="mt-1 text-lg font-bold text-emerald-600">
                     {formatAmount(Number(roomType.rate_per_night))}
-                    <span className="text-xs font-normal text-slate-400"> / night</span>
+                    <span className="text-xs font-normal text-slate-400">
+                      {" "}
+                      / night
+                    </span>
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
                     Total: {roomType.total_rooms} · Available today:{" "}
@@ -182,10 +202,7 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
                   Edit
                 </Link>
                 <div className="flex-1">
-                  <DeleteRoomTypeButton
-                    id={roomType.id}
-                    name={roomType.name}
-                  />
+                  <DeleteRoomTypeButton id={roomType.id} name={roomType.name} />
                 </div>
               </div>
             </Card>
@@ -194,7 +211,11 @@ export default function RoomTypeList({ roomTypes, pagination }: RoomTypeListProp
       </div>
       <div className="md:hidden">
         <Card padding="sm">
-          <Pagination {...pagination} basePath="/room-types" query={paginationQuery} />
+          <Pagination
+            {...pagination}
+            basePath="/room-types"
+            query={paginationQuery}
+          />
         </Card>
       </div>
     </div>

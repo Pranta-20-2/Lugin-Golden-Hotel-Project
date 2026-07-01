@@ -201,6 +201,14 @@ export class InvoiceRepository {
     return data;
   }
 
+  async findActiveByBookingIdWithRelations(
+    bookingId: number
+  ): Promise<InvoiceWithRelations | null> {
+    const invoice = await this.findActiveByBookingId(bookingId);
+    if (!invoice) return null;
+    return this.enrichInvoice(invoice);
+  }
+
   async findActiveByGroupId(groupId: number): Promise<Invoice | null> {
     const { data, error } = await this.supabase
       .from("invoices")
@@ -213,6 +221,14 @@ export class InvoiceRepository {
 
     if (error) throw error;
     return data;
+  }
+
+  async findActiveByGroupIdWithRelations(
+    groupId: number
+  ): Promise<InvoiceWithRelations | null> {
+    const invoice = await this.findActiveByGroupId(groupId);
+    if (!invoice) return null;
+    return this.enrichInvoice(invoice);
   }
 
   async create(input: InvoiceRecord): Promise<InvoiceWithRelations> {

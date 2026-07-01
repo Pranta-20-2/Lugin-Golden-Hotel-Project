@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidStayRange } from "@/lib/stayDates";
 import { bookingStatusSchema } from "@/validators/booking.schema";
 import { customerFieldsSchema } from "@/validators/customer.schema";
 
@@ -28,7 +29,7 @@ export const bookingGroupSchema = z
       .array(roomTypeLineSchema)
       .min(1, "Select at least one room type"),
   })
-  .refine((data) => new Date(data.check_out) > new Date(data.check_in), {
+  .refine((data) => isValidStayRange(data.check_in, data.check_out), {
     message: "Check-out must be after check-in",
     path: ["check_out"],
   });

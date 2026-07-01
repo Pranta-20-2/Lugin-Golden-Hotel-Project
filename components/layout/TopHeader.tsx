@@ -18,7 +18,7 @@ export default function TopHeader({
   onSignOut,
 }: TopHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-surface/95 backdrop-blur-md">
+    <header className="no-print sticky top-0 z-30 border-b border-slate-200/80 bg-surface/95 backdrop-blur-md">
       <div className="flex min-h-16 items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-8">
         <button
           type="button"

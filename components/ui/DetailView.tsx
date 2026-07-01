@@ -34,7 +34,7 @@ export default function DetailView({
             <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="no-print flex flex-wrap gap-2">
           {extraActions}
           {editHref ? (
             <Link

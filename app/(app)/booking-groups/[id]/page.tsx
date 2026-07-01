@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BookingGroupService } from "@/services/bookingGroup.service";
+import { InvoiceService } from "@/services/invoice.service";
 import BookingGroupDetail from "@/components/booking-groups/BookingGroupDetail";
 
 type BookingGroupDetailPageProps = {
@@ -19,14 +20,17 @@ export default async function BookingGroupDetailPage({
 
   const supabase = await createClient();
   const service = new BookingGroupService(supabase);
+  const invoiceService = new InvoiceService(supabase);
 
   let group;
+  let invoice = null;
 
   try {
     group = await service.getById(numericId);
+    invoice = await invoiceService.getActiveByGroupId(numericId);
   } catch {
     notFound();
   }
 
-  return <BookingGroupDetail group={group} />;
+  return <BookingGroupDetail group={group} invoice={invoice} />;
 }

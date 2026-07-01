@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { BookingStatus, BookingWithRelations } from "@/types/booking";
-import {
-  BOOKING_STATUSES,
-  BOOKING_STATUS_LABELS,
-} from "@/types/booking";
+import { BOOKING_STATUSES, BOOKING_STATUS_LABELS } from "@/types/booking";
 import Card from "@/components/ui/Card";
 import AddButton from "@/components/ui/AddButton";
 import ViewButton from "@/components/ui/ViewButton";
@@ -16,6 +13,11 @@ import Pagination from "@/components/ui/Pagination";
 import DebouncedSearchInput from "@/components/ui/DebouncedSearchInput";
 import FilterTabs from "@/components/ui/FilterTabs";
 import { formatAmount } from "@/lib/formatCurrency";
+import {
+  formatCheckInDateTime,
+  formatCheckOutDateTime,
+  formatStayRange,
+} from "@/lib/stayDates";
 import type { PaginatedResult } from "@/types/pagination";
 
 type BookingListProps = {
@@ -33,15 +35,6 @@ function getStatusHref(status?: BookingStatus, search?: string) {
   return `/bookings?${params.toString()}`;
 }
 
-function formatDate(value: string | null | undefined) {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 export default function BookingList({
   bookings,
   pagination,
@@ -52,16 +45,19 @@ export default function BookingList({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
-        <p className="text-sm text-slate-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center gap-3 sm:gap-4">
+        <div className="order-1 md:order-2 justify-self-end">
+          <AddButton href="/bookings/new">Add Booking</AddButton>
+        </div>
+
+        <p className="order-2 md:order-1 text-sm text-slate-500">
           {bookings.length} booking{bookings.length === 1 ? "" : "s"}
         </p>
-        <AddButton href="/bookings/new">Add Booking</AddButton>
       </div>
 
       <DebouncedSearchInput
         placeholder="Search booking no, guest, or room type..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <FilterTabs
@@ -111,7 +107,10 @@ export default function BookingList({
             <tbody className="divide-y divide-slate-100">
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td
+                    colSpan={7}
+                    className="px-4 py-10 text-center text-sm text-slate-500"
+                  >
                     No bookings yet. Tap &quot;Add Booking&quot; to create one.
                   </td>
                 </tr>
@@ -129,10 +128,10 @@ export default function BookingList({
                       {booking.room_types?.name ?? "—"}
                     </td>
                     <td className="px-4 py-3.5 text-sm text-slate-700">
-                      {formatDate(booking.check_in)}
+                      {formatCheckInDateTime(booking.check_in)}
                     </td>
                     <td className="px-4 py-3.5 text-sm text-slate-700">
-                      {formatDate(booking.check_out)}
+                      {formatCheckOutDateTime(booking.check_out)}
                     </td>
                     <td className="px-4 py-3.5 text-sm font-medium">
                       {Number(booking.due_amount) > 0 ? (
@@ -148,7 +147,10 @@ export default function BookingList({
                     <td className="px-4 py-3.5">
                       <BookingStatusBadge status={booking.status} />
                     </td>
-                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-4 py-3.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-center gap-2">
                         <ViewButton href={`/bookings/${booking.id}`} />
                         <Link
@@ -165,7 +167,9 @@ export default function BookingList({
                         </Link>
                         <DeleteBookingButton
                           id={booking.id}
-                          guestName={booking.customers?.name ?? booking.booking_no}
+                          guestName={
+                            booking.customers?.name ?? booking.booking_no
+                          }
                         />
                       </div>
                     </td>
@@ -175,7 +179,11 @@ export default function BookingList({
             </tbody>
           </table>
         </div>
-        <Pagination {...pagination} basePath="/bookings" query={paginationQuery} />
+        <Pagination
+          {...pagination}
+          basePath="/bookings"
+          query={paginationQuery}
+        />
       </Card>
 
       <div className="space-y-3 md:hidden">
@@ -201,7 +209,7 @@ export default function BookingList({
                   {booking.room_types?.name ?? "—"}
                 </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  {formatDate(booking.check_in)} → {formatDate(booking.check_out)}
+                  {formatStayRange(booking.check_in, booking.check_out)}
                 </p>
                 <p className="mt-1 text-sm font-medium">
                   Due:{" "}
@@ -223,7 +231,10 @@ export default function BookingList({
                 className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ViewButton href={`/bookings/${booking.id}`} className="h-10 flex-1" />
+                <ViewButton
+                  href={`/bookings/${booking.id}`}
+                  className="h-10 flex-1"
+                />
                 <Link
                   href={`/bookings/${booking.id}/edit`}
                   className="flex h-10 flex-1 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-primary"
@@ -249,7 +260,11 @@ export default function BookingList({
       </div>
       <div className="md:hidden">
         <Card padding="sm">
-          <Pagination {...pagination} basePath="/bookings" query={paginationQuery} />
+          <Pagination
+            {...pagination}
+            basePath="/bookings"
+            query={paginationQuery}
+          />
         </Card>
       </div>
     </div>

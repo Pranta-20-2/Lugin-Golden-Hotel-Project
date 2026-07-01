@@ -79,6 +79,36 @@ export class InvoiceService {
     }
   }
 
+  async getActiveByBookingId(
+    bookingId: number
+  ): Promise<InvoiceWithRelations | null> {
+    if (!Number.isInteger(bookingId) || bookingId <= 0) {
+      throw new InvoiceServiceError("Invalid booking id", 400);
+    }
+
+    try {
+      return await this.repository.findActiveByBookingIdWithRelations(bookingId);
+    } catch (error) {
+      if (error instanceof InvoiceServiceError) throw error;
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
+  async getActiveByGroupId(
+    groupId: number
+  ): Promise<InvoiceWithRelations | null> {
+    if (!Number.isInteger(groupId) || groupId <= 0) {
+      throw new InvoiceServiceError("Invalid booking group id", 400);
+    }
+
+    try {
+      return await this.repository.findActiveByGroupIdWithRelations(groupId);
+    } catch (error) {
+      if (error instanceof InvoiceServiceError) throw error;
+      mapSupabaseError(error as { code?: string; message: string });
+    }
+  }
+
   async update(id: number, input: unknown): Promise<InvoiceWithRelations> {
     const parsed = updateInvoiceSchema.safeParse(input);
     if (!parsed.success) {

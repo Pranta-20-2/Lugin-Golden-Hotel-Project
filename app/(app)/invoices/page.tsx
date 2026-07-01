@@ -6,6 +6,7 @@ import { BookingGroupService } from "@/services/bookingGroup.service";
 import { InvoiceRepository } from "@/repositories/invoice.repository";
 import InvoiceList from "@/components/invoices/InvoiceList";
 import InvoiceGenerateCard from "@/components/invoices/InvoiceGenerateCard";
+import BackButton from "@/components/layout/BackButton";
 import { normalizePaginationParams } from "@/types/pagination";
 import { getBookingGroupTotals } from "@/types/bookingGroup";
 
@@ -93,6 +94,7 @@ export default async function InvoicesPage({ searchParams }: InvoicesPageProps) 
 
   return (
     <>
+      {generateCard ? <BackButton useHistoryBack label="Back" /> : null}
       {generateCard}
       <InvoiceList invoices={result.data} pagination={result} />
     </>

@@ -44,6 +44,13 @@ function mapSupabaseError(error: { code?: string; message: string }): never {
     );
   }
 
+  if (error.code === "23505") {
+    throw new BookingGroupServiceError(
+      "Failed to assign unique booking numbers. Please try again.",
+      409
+    );
+  }
+
   if (error.code === "PGRST116") {
     throw new BookingGroupServiceError("Booking group not found", 404);
   }

@@ -8,7 +8,7 @@ import {
   getTodayAvailabilityRange,
   sortRoomTypesForSelect,
 } from "@/lib/roomTypeAvailability";
-import { formatDate } from "@/components/ui/DetailView";
+import { formatStayRange, isValidStayRange } from "@/lib/stayDates";
 
 export default function RoomTypeAvailabilityChart() {
   const todayRange = getTodayAvailabilityRange();
@@ -18,9 +18,7 @@ export default function RoomTypeAvailabilityChart() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const hasValidDates =
-    Boolean(checkIn && checkOut) &&
-    new Date(checkOut).getTime() > new Date(checkIn).getTime();
+  const hasValidDates = Boolean(checkIn && checkOut) && isValidStayRange(checkIn, checkOut);
 
   useEffect(() => {
     if (!hasValidDates) {
@@ -86,8 +84,6 @@ export default function RoomTypeAvailabilityChart() {
       ),
     [sortedRoomTypes]
   );
-
-  const maxTotal = Math.max(...sortedRoomTypes.map((item) => item.total_rooms), 1);
 
   return (
     <Card className="h-full lg:col-span-2">
@@ -162,7 +158,7 @@ export default function RoomTypeAvailabilityChart() {
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
             <p className="text-sm text-slate-600">
-              {formatDate(checkIn)} → {formatDate(checkOut)}
+              {formatStayRange(checkIn, checkOut)}
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="font-semibold text-emerald-700">
@@ -178,36 +174,46 @@ export default function RoomTypeAvailabilityChart() {
           </div>
 
           {totals.total > 0 && (
-            <div className="overflow-hidden rounded-full bg-slate-100">
-              <div className="flex h-5">
-                <div
-                  className="h-full bg-emerald-500"
-                  style={{ width: `${(totals.available / totals.total) * 100}%` }}
-                  title={`Available: ${totals.available}`}
-                />
-                <div
-                  className="h-full bg-amber-500"
-                  style={{ width: `${(totals.booked / totals.total) * 100}%` }}
-                  title={`Booked: ${totals.booked}`}
-                />
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Overall availability
+              </p>
+              <div className="overflow-hidden rounded-full bg-slate-100">
+                <div className="flex h-5">
+                  <div
+                    className="h-full bg-emerald-500"
+                    style={{
+                      width: `${(totals.available / totals.total) * 100}%`,
+                    }}
+                    title={`Available: ${totals.available}`}
+                  />
+                  <div
+                    className="h-full bg-amber-500"
+                    style={{
+                      width: `${(totals.booked / totals.total) * 100}%`,
+                    }}
+                    title={`Booked: ${totals.booked}`}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  Available ({totals.available})
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  Booked ({totals.booked})
+                </span>
               </div>
             </div>
           )}
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {sortedRoomTypes.map((roomType) => {
-              const availableWidth = `${Math.max(
-                (roomType.available_count / roomType.total_rooms) * 100,
-                roomType.available_count > 0 ? 6 : 0
-              )}%`;
-              const bookedWidth = `${Math.max(
-                (roomType.booked_count / roomType.total_rooms) * 100,
-                roomType.booked_count > 0 ? 6 : 0
-              )}%`;
-              const inventoryWidth = `${Math.max(
-                (roomType.total_rooms / maxTotal) * 100,
-                8
-              )}%`;
+              const totalRooms = Math.max(roomType.total_rooms, 1);
+              const availableWidth = `${(roomType.available_count / totalRooms) * 100}%`;
+              const bookedWidth = `${(roomType.booked_count / totalRooms) * 100}%`;
               const isAvailable = roomType.available_count > 0;
 
               return (
@@ -245,19 +251,22 @@ export default function RoomTypeAvailabilityChart() {
                     </span>
                   </div>
 
-                  <div
-                    className="h-3 overflow-hidden rounded-full bg-white ring-1 ring-slate-100"
-                    style={{ width: inventoryWidth, maxWidth: "100%" }}
-                  >
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-white ring-1 ring-slate-100">
                     <div className="flex h-full">
-                      <div
-                        className="h-full bg-emerald-500"
-                        style={{ width: availableWidth }}
-                      />
-                      <div
-                        className="h-full bg-amber-500"
-                        style={{ width: bookedWidth }}
-                      />
+                      {roomType.available_count > 0 && (
+                        <div
+                          className="h-full bg-emerald-500"
+                          style={{ width: availableWidth }}
+                          title={`Available: ${roomType.available_count}`}
+                        />
+                      )}
+                      {roomType.booked_count > 0 && (
+                        <div
+                          className="h-full bg-amber-500"
+                          style={{ width: bookedWidth }}
+                          title={`Booked: ${roomType.booked_count}`}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>

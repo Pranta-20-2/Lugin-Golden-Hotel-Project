@@ -50,16 +50,18 @@ export default function BookingGroupList({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 items-center justify-between gap-3 sm:gap-4">
         <p className="text-sm text-slate-500">
           {groups.length} group{groups.length === 1 ? "" : "s"}
         </p>
-        <AddButton href="/booking-groups/new">Add Group Booking</AddButton>
+        <div className="justify-self-end">
+          <AddButton href="/booking-groups/new">Add Group Booking</AddButton>
+        </div>
       </div>
 
       <DebouncedSearchInput
         placeholder="Search group name, contact, or mobile..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <FilterTabs
@@ -103,7 +105,10 @@ export default function BookingGroupList({
             <tbody className="divide-y divide-slate-100">
               {groups.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td
+                    colSpan={5}
+                    className="px-4 py-10 text-center text-sm text-slate-500"
+                  >
                     No group bookings yet.
                   </td>
                 </tr>
@@ -120,10 +125,13 @@ export default function BookingGroupList({
                         <p className="text-sm font-semibold text-slate-900">
                           {group.group_name}
                         </p>
-                        <p className="text-xs text-slate-500">{group.contact_person}</p>
+                        <p className="text-xs text-slate-500">
+                          {group.contact_person}
+                        </p>
                       </td>
                       <td className="px-4 py-3.5 text-sm text-slate-700">
-                        {getRoomTypeSummary(group) || `${totals.roomCount} room(s)`}
+                        {getRoomTypeSummary(group) ||
+                          `${totals.roomCount} room(s)`}
                       </td>
                       <td className="px-4 py-3.5 text-sm font-medium text-emerald-600">
                         {formatAmount(totals.totalBill)}
@@ -131,7 +139,10 @@ export default function BookingGroupList({
                       <td className="px-4 py-3.5">
                         <BookingStatusBadge status={group.status} />
                       </td>
-                      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="px-4 py-3.5"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-center gap-2">
                           <ViewButton href={`/booking-groups/${group.id}`} />
                           <Link
@@ -176,8 +187,12 @@ export default function BookingGroupList({
               className="cursor-pointer"
               onClick={() => router.push(`/booking-groups/${group.id}`)}
             >
-              <h3 className="font-semibold text-slate-900">{group.group_name}</h3>
-              <p className="mt-1 text-sm text-slate-600">{getRoomTypeSummary(group)}</p>
+              <h3 className="font-semibold text-slate-900">
+                {group.group_name}
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                {getRoomTypeSummary(group)}
+              </p>
               <p className="mt-2 text-lg font-bold text-emerald-600">
                 {formatAmount(totals.totalBill)}
               </p>

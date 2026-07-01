@@ -1,6 +1,7 @@
 import type { RoomTypeWithAvailability } from "@/types/roomType";
 import { BOOKING_STATUS_LABELS, type BookingStatus } from "@/types/booking";
 import { isActiveBookingStatus } from "@/lib/bookingRoomStatusSync";
+import { isValidStayRange } from "@/lib/stayDates";
 
 export function datesOverlap(
   checkInA: string,
@@ -39,7 +40,7 @@ export function resolveAvailabilityRange(
   if (
     checkIn &&
     checkOut &&
-    new Date(checkOut).getTime() > new Date(checkIn).getTime()
+    isValidStayRange(checkIn, checkOut)
   ) {
     return { checkIn, checkOut };
   }

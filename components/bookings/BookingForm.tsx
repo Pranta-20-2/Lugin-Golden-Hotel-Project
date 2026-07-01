@@ -30,6 +30,7 @@ import {
   resolveAvailabilityRange,
   sortRoomTypesForSelect,
 } from "@/lib/roomTypeAvailability";
+import { isValidStayRange, STAY_TIME_POLICY_HINT } from "@/lib/stayDates";
 import { emptyCustomerFields } from "@/lib/customerFields";
 
 type BookingFormProps = {
@@ -105,10 +106,7 @@ export default function BookingForm({
     [roomTypes, currentRoomTypeId]
   );
 
-  const hasValidDates =
-    checkIn &&
-    checkOut &&
-    new Date(checkOut).getTime() > new Date(checkIn).getTime();
+  const hasValidDates = isValidStayRange(checkIn, checkOut);
 
   useEffect(() => {
     if (!hasValidDates) {
@@ -284,6 +282,10 @@ export default function BookingForm({
               className={inputClass}
             />
           </div>
+
+          <p className="text-xs text-slate-500 sm:col-span-2">
+            {STAY_TIME_POLICY_HINT}
+          </p>
 
           <div>
             <label

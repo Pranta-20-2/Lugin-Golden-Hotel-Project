@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { RoomTypeService } from "@/services/roomType.service";
 import { getTodayAvailabilityRange } from "@/lib/roomTypeAvailability";
+import { isValidStayRange } from "@/lib/stayDates";
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
       ? getTodayAvailabilityRange()
       : { checkIn: checkInParam, checkOut: checkOutParam };
 
-  if (new Date(checkOut) <= new Date(checkIn)) {
+  if (!isValidStayRange(checkIn, checkOut)) {
     return NextResponse.json(
       { error: "check_out must be after check_in" },
       { status: 400 }

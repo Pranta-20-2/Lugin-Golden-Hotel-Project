@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BOOKING_STATUSES } from "@/types/booking";
+import { isValidStayRange } from "@/lib/stayDates";
 import { customerFieldsSchema } from "@/validators/customer.schema";
 
 const optionalText = z
@@ -42,7 +43,7 @@ export const bookingSchema = z
     bookingWithExistingCustomerSchema,
     bookingWithNewCustomerSchema,
   ])
-  .refine((data) => new Date(data.check_out) > new Date(data.check_in), {
+  .refine((data) => isValidStayRange(data.check_in, data.check_out), {
     message: "Check-out must be after check-in",
     path: ["check_out"],
   });

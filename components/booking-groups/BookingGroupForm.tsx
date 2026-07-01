@@ -22,6 +22,7 @@ import {
   calculateTotalBill,
 } from "@/lib/bookingCalculations";
 import { resolveAvailabilityRange } from "@/lib/roomTypeAvailability";
+import { isValidStayRange, STAY_TIME_POLICY_HINT } from "@/lib/stayDates";
 import BillingSummary from "@/components/ui/BillingSummary";
 import ProcessLoader from "@/components/ui/ProcessLoader";
 import CustomerFields from "@/components/customers/CustomerFields";
@@ -85,10 +86,7 @@ export default function BookingGroupForm({
   const [loading, setLoading] = useState(false);
 
   const nights = calculateNights(checkIn, checkOut);
-  const hasValidDates =
-    checkIn &&
-    checkOut &&
-    new Date(checkOut).getTime() > new Date(checkIn).getTime();
+  const hasValidDates = isValidStayRange(checkIn, checkOut);
 
   const roomTypeLines = useMemo(
     () =>
@@ -277,6 +275,9 @@ export default function BookingGroupForm({
               className={inputClass}
             />
           </div>
+          <p className="text-xs text-slate-500 sm:col-span-2">
+            {STAY_TIME_POLICY_HINT}
+          </p>
         </div>
 
         <div>

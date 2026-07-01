@@ -38,7 +38,7 @@ export default function InvoiceList({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
+      <div className="flex sm:flex-col lg:flex-row items-center justify-between gap-3 sm:gap-4">
         <p className="text-sm text-slate-500">
           {invoices.length} invoice{invoices.length === 1 ? "" : "s"}
         </p>
@@ -46,7 +46,7 @@ export default function InvoiceList({
 
       <DebouncedSearchInput
         placeholder="Search invoice no or notes..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <Card padding="sm" className="hidden overflow-hidden md:block">

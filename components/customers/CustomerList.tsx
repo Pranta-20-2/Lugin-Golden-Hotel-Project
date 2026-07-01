@@ -25,16 +25,20 @@ export default function CustomerList({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
-        <p className="text-sm text-slate-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center gap-3 sm:gap-4">
+        <div className="order-1 md:order-2 justify-self-end">
+        <AddButton href="/customers/new">Add Customer</AddButton>
+        </div>
+
+        <p className="order-2 md:order-1 text-sm text-slate-500">
           {customers.length} customer{customers.length === 1 ? "" : "s"} registered
         </p>
-        <AddButton href="/customers/new">Add Customer</AddButton>
       </div>
+      
 
       <DebouncedSearchInput
         placeholder="Search name, mobile, or email..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <Card padding="sm" className="hidden overflow-hidden md:block">

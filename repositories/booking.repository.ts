@@ -8,7 +8,10 @@ import type {
 import type { PaginationParams, PaginatedResult } from "@/types/pagination";
 import { getPaginationRange, toPaginatedResult } from "@/types/pagination";
 import { ACTIVE_BOOKING_STATUSES } from "@/lib/bookingRoomStatusSync";
-import { buildBookingNo } from "@/lib/bookingCalculations";
+import {
+  buildBookingNo,
+  parseBookingNoSequence,
+} from "@/lib/bookingCalculations";
 import { datesOverlap } from "@/lib/roomTypeAvailability";
 
 type BookingListParams = PaginationParams & {
@@ -42,16 +45,32 @@ export class BookingRepository {
     return bookingNo;
   }
 
-  async getNextBookingNos(count: number): Promise<string[]> {
-    if (count <= 0) return [];
-
-    const { count: total, error } = await this.supabase
+  private async getMaxBookingSequence(): Promise<number> {
+    const { data, error } = await this.supabase
       .from("bookings")
-      .select("*", { count: "exact", head: true });
+      .select("booking_no")
+      .order("id", { ascending: false })
+      .limit(50);
 
     if (error) throw error;
 
-    const start = (total ?? 0) + 1;
+    let maxSeq = 0;
+    for (const row of data ?? []) {
+      const sequence = parseBookingNoSequence(String(row.booking_no));
+      if (sequence != null) {
+        maxSeq = Math.max(maxSeq, sequence);
+      }
+    }
+
+    return maxSeq;
+  }
+
+  async getNextBookingNos(count: number): Promise<string[]> {
+    if (count <= 0) return [];
+
+    const maxSeq = await this.getMaxBookingSequence();
+    const start = maxSeq + 1;
+
     return Array.from({ length: count }, (_, index) =>
       buildBookingNo(start + index)
     );

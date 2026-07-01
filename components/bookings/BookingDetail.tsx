@@ -1,17 +1,27 @@
 import type { BookingWithRelations } from "@/types/booking";
+import type { InvoiceWithRelations } from "@/types/invoice";
 import DeleteBookingButton from "@/components/bookings/DeleteBookingButton";
 import BookingStatusBadge from "@/components/rooms/BookingStatusBadge";
 import DetailView, { formatDate } from "@/components/ui/DetailView";
+import {
+  formatCheckInDateTime,
+  formatCheckOutDateTime,
+} from "@/lib/stayDates";
 import BillingSummary from "@/components/ui/BillingSummary";
+import BillingDocumentActions from "@/components/ui/BillingDocumentActions";
+import { buildBookingBillingDocument } from "@/lib/billingDocument";
 import Link from "next/link";
 
 type BookingDetailProps = {
   booking: BookingWithRelations;
+  invoice?: InvoiceWithRelations | null;
 };
 
-export default function BookingDetail({ booking }: BookingDetailProps) {
+export default function BookingDetail({ booking, invoice }: BookingDetailProps) {
+  const documentData = buildBookingBillingDocument(booking);
+
   return (
-    <div className="space-y-5">
+    <div id="invoice-print-area" className="space-y-5">
       <DetailView
         title={booking.booking_no}
         subtitle={booking.customers?.name ?? "Guest booking"}
@@ -26,8 +36,11 @@ export default function BookingDetail({ booking }: BookingDetailProps) {
           { label: "Customer", value: booking.customers?.name ?? "—" },
           { label: "Mobile", value: booking.customers?.mobile ?? "—" },
           { label: "Room Type", value: booking.room_types?.name ?? "—" },
-          { label: "Check-in", value: formatDate(booking.check_in) },
-          { label: "Check-out", value: formatDate(booking.check_out) },
+          { label: "Check-in", value: formatCheckInDateTime(booking.check_in) },
+          {
+            label: "Check-out",
+            value: formatCheckOutDateTime(booking.check_out),
+          },
           {
             label: "Status",
             value: <BookingStatusBadge status={booking.status} />,
@@ -37,12 +50,24 @@ export default function BookingDetail({ booking }: BookingDetailProps) {
           { label: "Updated", value: formatDate(booking.updated_at) },
         ]}
         extraActions={
-          <Link
-            href={`/invoices?bookingId=${booking.id}`}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
-          >
-            Generate Invoice
-          </Link>
+          <>
+            {invoice ? (
+              <Link
+                href={`/invoices/${invoice.id}`}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-blue-50 px-4 text-sm font-semibold text-primary transition hover:bg-blue-100"
+              >
+                View Invoice
+              </Link>
+            ) : (
+              <Link
+                href={`/invoices?bookingId=${booking.id}`}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+              >
+                Generate Invoice
+              </Link>
+            )}
+            <BillingDocumentActions documentData={documentData} />
+          </>
         }
       />
 

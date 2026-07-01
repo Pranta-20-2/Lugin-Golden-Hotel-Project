@@ -51,16 +51,19 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3 sm:gap-4">
-        <p className="text-sm text-slate-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-center gap-3 sm:gap-4">
+        <div className="order-1 md:order-2 justify-self-end">
+          <AddButton href="/rooms/new">Add Room</AddButton>
+        </div>
+
+        <p className="order-2 md:order-1 text-sm text-slate-500">
           {rooms.length} room{rooms.length === 1 ? "" : "s"} configured
         </p>
-        <AddButton href="/rooms/new">Add Room</AddButton>
       </div>
 
       <DebouncedSearchInput
         placeholder="Search room number or type..."
-        className="max-w-md"
+        className="max-w-full"
       />
 
       <FilterTabs
@@ -107,7 +110,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
             <tbody className="divide-y divide-slate-100">
               {rooms.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td
+                    colSpan={6}
+                    className="px-4 py-10 text-center text-sm text-slate-500"
+                  >
                     No rooms yet. Tap &quot;Add Room&quot; to create one.
                   </td>
                 </tr>
@@ -137,7 +143,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
                         <span className="text-sm text-slate-400">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-4 py-3.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-center gap-2">
                         <ViewButton href={`/rooms/${room.id}`} />
                         <Link
@@ -146,7 +155,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
                         >
                           Edit
                         </Link>
-                        <DeleteRoomButton id={room.id} roomNumber={room.room_number} />
+                        <DeleteRoomButton
+                          id={room.id}
+                          roomNumber={room.room_number}
+                        />
                       </div>
                     </td>
                   </tr>
@@ -183,7 +195,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
                   </p>
                   <p className="mt-1 text-lg font-bold text-emerald-600">
                     {getRate(room)}
-                    <span className="text-xs font-normal text-slate-400"> / night</span>
+                    <span className="text-xs font-normal text-slate-400">
+                      {" "}
+                      / night
+                    </span>
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <RoomStatusBadge status={room.status} />
@@ -199,7 +214,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
                 className="mt-4 flex gap-2 border-t border-slate-100 pt-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ViewButton href={`/rooms/${room.id}`} className="h-10 flex-1" />
+                <ViewButton
+                  href={`/rooms/${room.id}`}
+                  className="h-10 flex-1"
+                />
                 <Link
                   href={`/rooms/${room.id}/edit`}
                   className="flex h-10 flex-1 items-center justify-center rounded-xl bg-blue-50 text-sm font-semibold text-primary"
@@ -207,7 +225,10 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
                   Edit
                 </Link>
                 <div className="flex-1">
-                  <DeleteRoomButton id={room.id} roomNumber={room.room_number} />
+                  <DeleteRoomButton
+                    id={room.id}
+                    roomNumber={room.room_number}
+                  />
                 </div>
               </div>
             </Card>
@@ -216,7 +237,11 @@ export default function RoomList({ rooms, pagination, status }: RoomListProps) {
       </div>
       <div className="md:hidden">
         <Card padding="sm">
-          <Pagination {...pagination} basePath="/rooms" query={paginationQuery} />
+          <Pagination
+            {...pagination}
+            basePath="/rooms"
+            query={paginationQuery}
+          />
         </Card>
       </div>
     </div>

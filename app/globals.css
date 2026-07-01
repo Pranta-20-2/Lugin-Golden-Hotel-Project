@@ -36,3 +36,32 @@
     display: none;
   }
 }
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  #invoice-print-area {
+    display: block !important;
+  }
+
+  #invoice-print-area .ring-1,
+  #invoice-print-area .shadow-sm {
+    box-shadow: none !important;
+  }
+}
